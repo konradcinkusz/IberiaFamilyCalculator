@@ -1,0 +1,2229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Familiar — España 2026</title>
+<meta name="description" content="Calculadora interactiva de presupuesto familiar con cálculo de IRPF español, autónomos y nómina. Configurable, exportable y de código abierto.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --warm-white: #FDFAF4;
+    --terracotta: #C4613A;
+    --terracotta-light: #E8906A;
+    --terracotta-dark: #9B4A2B;
+    --deep: #1A1410;
+    --text: #2C2420;
+    --muted: #8C7B72;
+    --muted-light: #B5A89D;
+    --gold: #B8973A;
+    --green: #3A6B4A;
+    --red-soft: #C44A3A;
+    --border: rgba(26,20,16,0.1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--cream);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--terracotta); color: var(--cream); }
+
+  .header {
+    background: var(--deep);
+    color: var(--cream);
+    padding: 60px 32px 50px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 85% 15%, rgba(196,97,58,0.28) 0%, transparent 55%),
+                radial-gradient(ellipse at 15% 85%, rgba(184,151,58,0.14) 0%, transparent 50%);
+  }
+  .header-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 22px;
+  }
+  .header-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--terracotta-light);
+  }
+  .lang-switcher {
+    display: flex;
+    gap: 0;
+    border: 1px solid rgba(245,240,232,0.2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .lang-btn {
+    background: transparent;
+    color: rgba(245,240,232,0.6);
+    border: none;
+    padding: 6px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-right: 1px solid rgba(245,240,232,0.2);
+  }
+  .lang-btn:last-child { border-right: none; }
+  .lang-btn:hover { background: rgba(245,240,232,0.05); color: var(--cream); }
+  .lang-btn.active {
+    background: var(--terracotta);
+    color: var(--cream);
+  }
+  .header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 400;
+    line-height: 1.05;
+    color: var(--cream);
+    letter-spacing: -1px;
+    margin-bottom: 14px;
+  }
+  .header h1 em {
+    font-style: italic;
+    color: var(--terracotta-light);
+  }
+  .header-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(16px, 1.8vw, 20px);
+    font-style: italic;
+    color: rgba(245,240,232,0.72);
+    max-width: 620px;
+    margin-bottom: 22px;
+  }
+  .header-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+  .btn {
+    background: transparent;
+    color: var(--cream);
+    border: 1px solid rgba(245,240,232,0.3);
+    padding: 10px 20px;
+    border-radius: 2px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { background: rgba(245,240,232,0.08); border-color: var(--terracotta-light); }
+  .btn-primary {
+    background: var(--terracotta);
+    border-color: var(--terracotta);
+    color: var(--cream);
+  }
+  .btn-primary:hover { background: var(--terracotta-dark); border-color: var(--terracotta-dark); }
+
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 32px;
+    align-items: start;
+  }
+
+  .col-main { min-width: 0; }
+  .col-side {
+    position: sticky;
+    top: 20px;
+    align-self: start;
+  }
+
+  .panel {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+
+  .panel-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--deep);
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .panel-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  .group-toolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .icon-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 2px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .icon-btn:hover {
+    background: var(--terracotta);
+    color: var(--cream);
+    border-color: var(--terracotta);
+  }
+
+  .entity {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--terracotta);
+    border-radius: 2px;
+    padding: 18px 18px 14px;
+    margin-bottom: 14px;
+    position: relative;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .entity[data-type="expense"] { border-left-color: var(--red-soft); }
+  .entity[data-type="benefit"] { border-left-color: var(--gold); }
+  .entity.removing {
+    opacity: 0;
+    transform: translateX(20px);
+    pointer-events: none;
+  }
+
+  .entity-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .entity-name-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--border);
+    padding: 4px 0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--deep);
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .entity-name-input:focus { border-bottom-color: var(--terracotta); }
+
+  .entity-controls {
+    display: flex;
+    gap: 4px;
+  }
+  .entity-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    user-select: none;
+    padding: 0;
+  }
+  .entity-btn:hover {
+    background: var(--red-soft);
+    border-color: var(--red-soft);
+    color: var(--cream);
+  }
+  .entity-btn.duplicate:hover {
+    background: var(--terracotta);
+    border-color: var(--terracotta);
+  }
+  .entity-btn:active { transform: scale(0.92); }
+
+  .entity-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .field-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
+  .field-label label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .field-label .value-display {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--terracotta-dark);
+    line-height: 1;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    outline: none;
+    border-radius: 1px;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--terracotta);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--warm-white);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    transition: transform 0.12s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--terracotta);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--warm-white);
+  }
+
+  input[type="number"], select {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 2px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type="number"]:focus, select:focus { border-color: var(--terracotta); }
+
+  .range-bounds {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .range-bounds-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .range-bounds-item label {
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted-light);
+  }
+  .range-bounds-item input {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .entity-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+  }
+  .meta-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .meta-field label {
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .meta-field select, .meta-field input {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+
+  .checkbox-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    cursor: pointer;
+    user-select: none;
+  }
+  .checkbox-wrap input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--muted);
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    background: var(--warm-white);
+  }
+  .checkbox-wrap input[type="checkbox"]:checked {
+    background: var(--terracotta);
+    border-color: var(--terracotta);
+  }
+  .checkbox-wrap input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--cream);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .checkbox-wrap span {
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .family-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .family-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .family-field label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .results {
+    background: var(--deep);
+    color: var(--cream);
+    padding: 32px 28px;
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+  }
+  .results::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 85% 10%, rgba(196,97,58,0.18) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .results-inner { position: relative; z-index: 1; }
+  .results-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--terracotta-light);
+    margin-bottom: 18px;
+    display: block;
+  }
+  .results h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--cream);
+    margin-bottom: 18px;
+  }
+  .res-section { margin-bottom: 18px; }
+  .res-section-title {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--terracotta-light);
+    margin-bottom: 10px;
+  }
+  .res-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 7px 0;
+    border-bottom: 1px dashed rgba(245,240,232,0.1);
+    font-size: 13px;
+    gap: 10px;
+  }
+  .res-row:last-child { border-bottom: none; }
+  .res-row .lbl { color: rgba(245,240,232,0.7); }
+  .res-row .val {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    color: var(--cream);
+    font-size: 16px;
+    white-space: nowrap;
+  }
+  .res-row.detail {
+    font-size: 11px;
+    padding: 3px 0;
+    border-bottom: none;
+  }
+  .res-row.detail .lbl { color: rgba(245,240,232,0.45); padding-left: 12px; }
+  .res-row.detail .val { font-size: 13px; color: rgba(245,240,232,0.7); }
+  .res-row.subtotal {
+    margin-top: 6px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(245,240,232,0.18);
+    border-bottom: none;
+  }
+  .res-row.subtotal .lbl {
+    color: var(--cream);
+    font-weight: 500;
+  }
+  .res-row.subtotal .val {
+    color: var(--terracotta-light);
+    font-size: 18px;
+  }
+  .res-total {
+    background: var(--terracotta);
+    margin: 20px -28px -32px;
+    padding: 22px 28px;
+  }
+  .res-total .lbl {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.85);
+    margin-bottom: 4px;
+  }
+  .res-total .val-big {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--cream);
+    line-height: 1.05;
+  }
+  .res-total .val-big small {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    opacity: 0.85;
+  }
+  .res-total.negative { background: var(--red-soft); }
+
+  .res-projections {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .proj {
+    background: rgba(26,20,16,0.28);
+    padding: 10px 8px;
+    border-radius: 2px;
+    text-align: center;
+  }
+  .proj-label {
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.7);
+    margin-bottom: 2px;
+  }
+  .proj-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--cream);
+    line-height: 1.1;
+  }
+
+  .tax-info {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    padding: 16px;
+    border-radius: 2px;
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .tax-info strong { color: var(--deep); }
+
+  .empty-state {
+    text-align: center;
+    padding: 24px 12px;
+    color: var(--muted);
+    font-size: 12px;
+    font-style: italic;
+    background: var(--cream);
+    border: 1px dashed var(--border);
+    border-radius: 2px;
+  }
+
+  details { margin-top: 14px; }
+  details summary {
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 6px 0;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before {
+    content: '+';
+    color: var(--terracotta);
+    font-size: 14px;
+    line-height: 1;
+  }
+  details[open] summary::before { content: '−'; }
+  details summary:hover { color: var(--terracotta); }
+
+  .footer {
+    background: var(--deep);
+    color: rgba(245,240,232,0.55);
+    padding: 36px 32px;
+    text-align: center;
+    font-size: 12px;
+  }
+  .footer p { margin: 4px 0; }
+  .footer-italic {
+    margin-top: 14px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: rgba(245,240,232,0.7);
+  }
+
+  .help {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--muted);
+    text-align: center;
+    line-height: 14px;
+    font-size: 9px;
+    font-weight: 600;
+    cursor: help;
+    margin-left: 4px;
+    position: relative;
+  }
+  .help:hover { background: var(--terracotta); color: var(--cream); }
+  .help::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--deep);
+    color: var(--cream);
+    padding: 6px 10px;
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1.4;
+    white-space: normal;
+    width: 200px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    z-index: 100;
+  }
+  .help:hover::after { opacity: 1; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--deep);
+    color: var(--cream);
+    padding: 12px 22px;
+    border-radius: 2px;
+    font-size: 13px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease-out;
+    z-index: 200;
+    max-width: 92%;
+    transform: translateY(20px);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  @media (max-width: 600px) {
+    .toast { left: 16px; right: 16px; }
+  }
+  .toast.show.has-action { pointer-events: auto; }
+  .toast-action {
+    margin-left: 12px;
+    background: transparent;
+    border: 1px solid rgba(245,240,232,0.4);
+    color: var(--terracotta-light);
+    padding: 4px 10px;
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .toast-action:hover { background: rgba(245,240,232,0.08); }
+
+  @media (max-width: 980px) {
+    .container { grid-template-columns: 1fr; padding: 24px 20px 60px; }
+    .col-side { position: static; order: -1; }
+    .header { padding: 48px 20px 36px; }
+    .panel { padding: 22px 20px; }
+    .res-projections { grid-template-columns: 1fr; }
+    .header-top { flex-direction: column; align-items: flex-start; }
+  }
+
+  @media print {
+    .header-actions, .group-toolbar, .entity-controls, .icon-btn, .footer, .lang-switcher { display: none !important; }
+    body { background: white; }
+    .col-side { position: static; }
+    .container { grid-template-columns: 1fr; }
+    .results { background: white; color: black; border: 1px solid #999; }
+    .results::before { display: none; }
+    .results-inner * { color: black !important; }
+    .res-total { background: #f0f0f0 !important; }
+    .res-total * { color: black !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <span class="header-label" data-i18n="header_label">Calculadora familiar · ES 2026</span>
+      <div class="lang-switcher" role="group" aria-label="Language">
+        <button class="lang-btn" data-lang="es">ES</button>
+        <button class="lang-btn" data-lang="pl">PL</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+      </div>
+    </div>
+    <h1 data-i18n="header_title" data-i18n-html>Tu presupuesto, <em>tus suposiciones</em></h1>
+    <p class="header-subtitle" data-i18n="header_subtitle">Calculadora interactiva con cálculo real de IRPF, autónomos y nómina española.</p>
+    <div class="header-actions">
+      <button class="btn btn-primary" id="btn-export" data-i18n="btn_export">Exportar JSON</button>
+      <button class="btn" id="btn-import" data-i18n="btn_import">Importar JSON</button>
+      <button class="btn" id="btn-share" data-i18n="btn_share">Copiar enlace</button>
+      <button class="btn" id="btn-reset" data-i18n="btn_reset">Reiniciar</button>
+      <button class="btn" id="btn-print" data-i18n="btn_print">Imprimir / PDF</button>
+      <input type="file" id="file-import" accept="application/json" style="display:none">
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="col-main">
+
+    <section class="panel">
+      <div class="panel-title" data-i18n="family_title">Entorno familiar</div>
+      <p class="panel-subtitle" data-i18n="family_subtitle">Datos que afectan al cálculo del IRPF mediante mínimo personal y por descendientes (Ley 35/2006).</p>
+
+      <div class="family-grid">
+        <div class="family-field">
+          <label for="f-region"><span data-i18n="family_region">Comunidad Autónoma</span> <span class="help" data-i18n-attr="data-tip:family_region_tip" data-tip="Las CCAA tienen sus propias escalas autonómicas del IRPF.">?</span></label>
+          <select id="f-region">
+            <option value="estatal" data-i18n="region_estatal">Escala estatal media (genérica)</option>
+            <option value="madrid">Madrid</option>
+            <option value="cataluna" data-i18n="region_cataluna">Cataluña</option>
+            <option value="valencia" data-i18n="region_valencia">C. Valenciana</option>
+            <option value="andalucia" data-i18n="region_andalucia">Andalucía</option>
+            <option value="galicia">Galicia</option>
+            <option value="paisvasco" data-i18n="region_paisvasco">País Vasco (foral — aprox.)</option>
+            <option value="navarra" data-i18n="region_navarra">Navarra (foral — aprox.)</option>
+          </select>
+        </div>
+        <div class="family-field">
+          <label for="f-kids"><span data-i18n="family_kids">Hijos a tu cargo</span> <span class="help" data-i18n-attr="data-tip:family_kids_tip" data-tip="Mínimo por descendiente: 1º +2.400€, 2º +2.700€, 3º +4.000€, 4º+ +4.500€. +2.800€ por menor de 3 años.">?</span></label>
+          <select id="f-kids">
+            <option value="0" data-i18n="kids_0">0 hijos</option>
+            <option value="1" data-i18n="kids_1">1 hijo</option>
+            <option value="2" selected data-i18n="kids_2">2 hijos</option>
+            <option value="3" data-i18n="kids_3">3 hijos</option>
+            <option value="4" data-i18n="kids_4">4 hijos</option>
+          </select>
+        </div>
+        <div class="family-field">
+          <label for="f-kids-under3" data-i18n="family_kids_under3">De los cuales menores de 3 años</label>
+          <select id="f-kids-under3">
+            <option value="0">0</option>
+            <option value="1" selected>1</option>
+            <option value="2">2</option>
+          </select>
+        </div>
+        <div class="family-field">
+          <label for="f-currency" data-i18n="family_currency">Moneda</label>
+          <select id="f-currency">
+            <option value="EUR" selected>€ EUR</option>
+            <option value="USD">$ USD</option>
+            <option value="GBP">£ GBP</option>
+            <option value="PLN">zł PLN</option>
+          </select>
+        </div>
+      </div>
+
+      <details>
+        <summary data-i18n="notes_summary">Notas sobre el cálculo</summary>
+        <div class="tax-info" data-i18n="notes_body" data-i18n-html><strong>Cómo funciona.</strong> El IRPF se calcula con escala estatal + autonómica.</div>
+      </details>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <span data-i18n="incomes_title">Ingresos</span>
+        <div class="group-toolbar">
+          <button class="icon-btn" data-add="income" data-subtype="employee" data-i18n="add_employee">+ Nómina</button>
+          <button class="icon-btn" data-add="income" data-subtype="autonomo" data-i18n="add_autonomo">+ Autónomo</button>
+          <button class="icon-btn" data-add="income" data-subtype="other" data-i18n="add_other">+ Otro</button>
+        </div>
+      </div>
+      <p class="panel-subtitle" data-i18n="incomes_subtitle">Cada entrada se calcula independientemente.</p>
+      <div id="list-income"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <span data-i18n="benefits_title">Beneficios y retribución flexible</span>
+        <div class="group-toolbar">
+          <button class="icon-btn" data-add="benefit" data-i18n="add_benefit">+ Añadir beneficio</button>
+        </div>
+      </div>
+      <p class="panel-subtitle" data-i18n="benefits_subtitle">Beneficios en especie con ventaja fiscal.</p>
+      <div id="list-benefit"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <span data-i18n="expenses_title">Gastos mensuales</span>
+        <div class="group-toolbar">
+          <button class="icon-btn" data-add="expense" data-i18n="add_expense">+ Añadir gasto</button>
+        </div>
+      </div>
+      <p class="panel-subtitle" data-i18n="expenses_subtitle">Tus gastos fijos y variables.</p>
+      <div id="list-expense"></div>
+    </section>
+
+    <details>
+      <summary data-i18n="tech_summary">Detalles técnicos del cálculo fiscal</summary>
+      <div class="panel" style="margin-top: 12px;">
+        <div data-i18n="tech_body" data-i18n-html></div>
+      </div>
+    </details>
+
+  </div>
+
+  <aside class="col-side">
+    <div class="results">
+      <div class="results-inner">
+        <span class="results-label" data-i18n="results_label">Resumen — mensual</span>
+        <h3 data-i18n="results_title">Tu presupuesto familiar</h3>
+
+        <div class="res-section">
+          <div class="res-section-title" data-i18n="r_income_section">Ingresos netos</div>
+          <div id="r-income-list"></div>
+          <div class="res-row subtotal">
+            <span class="lbl" data-i18n="r_income_total">Total ingresos netos</span>
+            <span class="val" id="r-income-total">0 €</span>
+          </div>
+        </div>
+
+        <div class="res-section" id="r-benefit-section" style="display:none;">
+          <div class="res-section-title" data-i18n="r_benefit_section">Beneficios (valor mensual)</div>
+          <div id="r-benefit-list"></div>
+          <div class="res-row subtotal">
+            <span class="lbl" data-i18n="r_benefit_total">Total beneficios</span>
+            <span class="val" id="r-benefit-total">0 €</span>
+          </div>
+          <div class="res-row detail">
+            <span class="lbl" data-i18n="r_benefit_tax_label">+ Ahorro fiscal estimado</span>
+            <span class="val" id="r-benefit-tax">0 €</span>
+          </div>
+        </div>
+
+        <div class="res-section">
+          <div class="res-section-title" data-i18n="r_expense_section">Gastos</div>
+          <div id="r-expense-list"></div>
+          <div class="res-row subtotal">
+            <span class="lbl" data-i18n="r_expense_total">Total gastos</span>
+            <span class="val" id="r-expense-total">0 €</span>
+          </div>
+        </div>
+
+        <div class="res-total" id="r-total-box">
+          <div class="lbl" data-i18n="r_balance">Queda al mes</div>
+          <div class="val-big"><span id="r-monthly">0 €</span> <small data-i18n="r_per_month">/ mes</small></div>
+          <div class="res-projections">
+            <div class="proj">
+              <div class="proj-label" data-i18n="proj_y1">1 año</div>
+              <div class="proj-value" id="r-y1">0 €</div>
+            </div>
+            <div class="proj">
+              <div class="proj-label" data-i18n="proj_y3">3 años</div>
+              <div class="proj-value" id="r-y3">0 €</div>
+            </div>
+            <div class="proj">
+              <div class="proj-label" data-i18n="proj_y5">5 años</div>
+              <div class="proj-value" id="r-y5">0 €</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer class="footer">
+  <p data-i18n="footer_p1">Calculadora familiar · datos guardados localmente · sin tracking · sin cookies</p>
+  <p data-i18n="footer_p2" data-i18n-html>Código abierto · MIT · <strong>orientativa</strong>. No sustituye a un asesor fiscal.</p>
+  <p class="footer-italic" data-i18n="footer_italic">Hecha con cuidado para familias que toman decisiones grandes.</p>
+</footer>
+
+<div class="toast" id="toast"><span id="toast-msg"></span></div>
+
+<script>
+/* ============================================================
+   I18N — translations
+   ============================================================ */
+
+const I18N = {
+  es: {
+    _label: 'ES',
+    _locale_html: 'es',
+    title_doc: 'Calculadora Familiar — España 2026',
+    header_label: 'Calculadora familiar · ES 2026',
+    header_title: 'Tu presupuesto, <em>tus suposiciones</em>',
+    header_subtitle: 'Calculadora interactiva con cálculo real de IRPF, autónomos y nómina española. Añade entidades, ajusta sliders, comparte el enlace — toda tu configuración se guarda en la URL y en el navegador.',
+    btn_export: 'Exportar JSON',
+    btn_import: 'Importar JSON',
+    btn_share: 'Copiar enlace',
+    btn_reset: 'Reiniciar',
+    btn_print: 'Imprimir / PDF',
+    family_title: 'Entorno familiar',
+    family_subtitle: 'Datos que afectan al cálculo del IRPF mediante mínimo personal y por descendientes (Ley 35/2006, art. 57–58).',
+    family_region: 'Comunidad Autónoma',
+    family_region_tip: 'Las CCAA tienen sus propias escalas autonómicas del IRPF. Madrid es la más baja, Cataluña/Valencia las más altas.',
+    family_kids: 'Hijos a tu cargo',
+    family_kids_tip: 'Mínimo por descendiente: 1º +2.400€, 2º +2.700€, 3º +4.000€, 4º+ +4.500€. +2.800€ extra por cada menor de 3 años.',
+    family_kids_under3: 'De los cuales menores de 3 años',
+    family_currency: 'Moneda',
+    region_estatal: 'Escala estatal media (genérica)',
+    region_cataluna: 'Cataluña',
+    region_valencia: 'C. Valenciana',
+    region_andalucia: 'Andalucía',
+    region_paisvasco: 'País Vasco (foral — aprox.)',
+    region_navarra: 'Navarra (foral — aprox.)',
+    kids_0: '0 hijos', kids_1: '1 hijo', kids_2: '2 hijos', kids_3: '3 hijos', kids_4: '4 hijos',
+    notes_summary: 'Notas sobre el cálculo',
+    notes_body: '<strong>Cómo funciona.</strong> El IRPF se calcula con escala estatal (50%) + autonómica (50%). Aplico el mínimo personal (5.550€) y por descendientes según los hijos declarados, divididos al 50% entre dos cónyuges (configuración familiar habitual). Para Seguridad Social asalariada uso 6,35% sobre la base con el tope de cotización 2026 (~59.060€). Para autónomos aplico la escala progresiva por tramos de rendimientos netos (RD 504/2022).<br><br><strong>Limitaciones.</strong> Es una herramienta orientativa. No sustituye a un asesor fiscal. No incluye deducciones autonómicas específicas (vivienda habitual, donaciones, alquiler joven, etc.) ni el régimen de Beckham. País Vasco y Navarra tienen sistema foral propio — los valores son aproximaciones.',
+    incomes_title: 'Ingresos',
+    incomes_subtitle: 'Cada entrada se calcula independientemente. La nómina aplica IRPF + Seguridad Social. El autónomo aplica IRPF + cuota de autónomos por tramo. "Otro" es ingreso neto directo.',
+    add_employee: '+ Nómina',
+    add_autonomo: '+ Autónomo',
+    add_other: '+ Otro',
+    benefits_title: 'Beneficios y retribución flexible',
+    benefits_subtitle: 'Beneficios en especie con ventaja fiscal: tickets restaurante, guardería, transporte, seguro médico, plan de pensiones. Reducen base imponible (tipo marginal × beneficio = ahorro real).',
+    add_benefit: '+ Añadir beneficio',
+    expenses_title: 'Gastos mensuales',
+    expenses_subtitle: 'Tus gastos fijos y variables. Cada uno con su slider. La suma se descuenta del ingreso neto familiar mensual.',
+    add_expense: '+ Añadir gasto',
+    tech_summary: 'Detalles técnicos del cálculo fiscal',
+    tech_body: '<h3 style="font-family: \'Cormorant Garamond\', serif; font-size: 22px; font-weight: 500; margin-bottom: 12px;">Tramos IRPF estatal 2026</h3><p style="font-size: 13px; margin-bottom: 10px;">0–12.450 €: 9,5% · 12.450–20.200 €: 12,0% · 20.200–35.200 €: 15,0% · 35.200–60.000 €: 18,5% · 60.000–300.000 €: 22,5% · &gt;300.000 €: 24,5%</p><p style="font-size: 13px; margin-bottom: 16px;">A esto se suma la <strong>escala autonómica</strong>, que varía por CCAA. Los tipos marginales totales van aproximadamente del 19% al 47–50%.</p><h3 style="font-family: \'Cormorant Garamond\', serif; font-size: 22px; font-weight: 500; margin: 18px 0 12px;">Cuota de autónomos 2026 (RD 504/2022)</h3><p style="font-size: 13px; line-height: 1.7;">Se calcula sobre rendimientos netos mensuales. Va de ~225 €/mes (rendimientos &lt;670€) a ~590 €/mes (&gt;6.000€).</p><h3 style="font-family: \'Cormorant Garamond\', serif; font-size: 22px; font-weight: 500; margin: 18px 0 12px;">Mínimos personales y familiares</h3><p style="font-size: 13px; line-height: 1.7;">Mínimo personal: 5.550 €/año. Por descendiente: 1º +2.400, 2º +2.700, 3º +4.000, 4º+ +4.500. Por menor de 3 años: +2.800 cada uno. En matrimonio se reparte al 50%.</p>',
+    income_employee_label: 'Nómina (asalariado) — bruto anual',
+    income_autonomo_label: 'Autónomo — bruto anual',
+    income_other_label: 'Otro ingreso — anual',
+    income_premium: 'Bonus / variable (%)',
+    income_payments: 'Pagas al año',
+    income_payments_12: '12 (sin extras)',
+    income_payments_14: '14 (con extras)',
+    income_payments_16: '16 (sector específico)',
+    income_gastos: 'Gastos deducibles (% sobre bruto)',
+    income_gastos_tip: 'Por defecto Hacienda permite ~7% de gastos de difícil justificación.',
+    benefit_amount: 'Importe',
+    benefit_amount_monthly: 'Importe mensual',
+    benefit_amount_yearly: 'Importe anual',
+    benefit_period: 'Periodicidad',
+    benefit_period_monthly: 'Mensual',
+    benefit_period_yearly: 'Anual',
+    benefit_taxfree: 'Exento de IRPF',
+    expense_amount: 'Importe mensual',
+    range_min: 'Mín',
+    range_max: 'Máx',
+    range_step: 'Paso',
+    btn_duplicate_title: 'Duplicar',
+    btn_delete_title: 'Eliminar',
+    new_employee: 'Nueva nómina',
+    new_autonomo: 'Nuevo autónomo',
+    new_other: 'Otro ingreso',
+    new_benefit: 'Nuevo beneficio',
+    new_expense: 'Nuevo gasto',
+    copy_suffix: ' (copia)',
+    empty_list: 'No hay entradas. Usa el botón de arriba para añadir.',
+    no_expenses: 'Sin gastos añadidos',
+    results_label: 'Resumen — mensual',
+    results_title: 'Tu presupuesto familiar',
+    r_income_section: 'Ingresos netos',
+    r_income_total: 'Total ingresos netos',
+    r_benefit_section: 'Beneficios (valor mensual)',
+    r_benefit_total: 'Total beneficios',
+    r_benefit_tax_label: '+ Ahorro fiscal estimado',
+    r_benefit_tax_suffix: '/mes',
+    r_expense_section: 'Gastos',
+    r_expense_total: 'Total gastos',
+    r_balance: 'Queda al mes',
+    r_per_month: '/ mes',
+    proj_y1: '1 año',
+    proj_y3: '3 años',
+    proj_y5: '5 años',
+    detail_employee: 'IRPF {rate}% efect. · {net}/año',
+    detail_autonomo: 'Cuota {quota}/año · IRPF {irpf}/año',
+    detail_other: 'Neto directo · {gross}/año',
+    footer_p1: 'Calculadora familiar de presupuesto — España 2026 · datos guardados localmente y en URL · sin tracking · sin cookies',
+    footer_p2: 'Código abierto · MIT · Esta calculadora es <strong>orientativa</strong>. No sustituye a un asesor fiscal.',
+    footer_italic: 'Hecha con cuidado para familias que toman decisiones grandes.',
+    toast_deleted: 'Eliminado',
+    toast_undo: 'Deshacer',
+    toast_copied: '✓ Enlace copiado',
+    toast_imported: '✓ Importado',
+    toast_import_error: 'Error al importar',
+    toast_reset: '✓ Reiniciado',
+    confirm_reset: '¿Reiniciar a valores por defecto? Se perderá tu configuración actual.'
+  },
+  pl: {
+    _label: 'PL',
+    _locale_html: 'pl',
+    title_doc: 'Kalkulator rodzinny — Hiszpania 2026',
+    header_label: 'Kalkulator rodzinny · ES 2026',
+    header_title: 'Twój budżet, <em>twoje założenia</em>',
+    header_subtitle: 'Interaktywny kalkulator z prawdziwym wyliczeniem hiszpańskiego IRPF, składek autónomos i pensji. Dodawaj pozycje, przesuwaj suwaki, udostępniaj link — cała konfiguracja zapisuje się w URL-u i w przeglądarce.',
+    btn_export: 'Eksport JSON',
+    btn_import: 'Import JSON',
+    btn_share: 'Skopiuj link',
+    btn_reset: 'Reset',
+    btn_print: 'Drukuj / PDF',
+    family_title: 'Sytuacja rodzinna',
+    family_subtitle: 'Dane wpływające na wyliczenie IRPF poprzez mínimo personal i ulgę na dzieci (Ley 35/2006, art. 57–58).',
+    family_region: 'Comunidad Autónoma',
+    family_region_tip: 'Każda wspólnota ma własną skalę autonomiczną IRPF. Madryt najniższa, Katalonia/Walencja najwyższe.',
+    family_kids: 'Dzieci na utrzymaniu',
+    family_kids_tip: 'Ulga na dziecko: 1. +2.400€, 2. +2.700€, 3. +4.000€, 4.+ +4.500€. Dodatkowo +2.800€ za każde poniżej 3 lat.',
+    family_kids_under3: 'W tym poniżej 3 lat',
+    family_currency: 'Waluta',
+    region_estatal: 'Skala krajowa (uśredniona)',
+    region_cataluna: 'Katalonia',
+    region_valencia: 'Walencja',
+    region_andalucia: 'Andaluzja',
+    region_paisvasco: 'Kraj Basków (foral — przybl.)',
+    region_navarra: 'Nawarra (foral — przybl.)',
+    kids_0: 'Brak dzieci', kids_1: '1 dziecko', kids_2: '2 dzieci', kids_3: '3 dzieci', kids_4: '4 dzieci',
+    notes_summary: 'Uwagi do wyliczenia',
+    notes_body: '<strong>Jak to działa.</strong> IRPF liczony jest jako skala państwowa (50%) + autonomiczna (50%). Aplikuję mínimo personal (5.550€) i ulgę na dzieci wg deklarowanej liczby, dzielone 50/50 między małżonków (typowa konfiguracja). Dla pracownika etatowego stosuję składkę SS 6,35% z topem 2026 (~59.060€). Dla autónomo aplikuję skalę progresywną wg tramów rendimientos netos (RD 504/2022).<br><br><strong>Ograniczenia.</strong> To narzędzie orientacyjne. Nie zastępuje doradcy podatkowego. Nie obejmuje specyficznych ulg autonomicznych (mieszkanie własne, darowizny, alquiler joven itd.) ani régimen Beckham. Kraj Basków i Nawarra mają własny system foral — wartości są przybliżeniem.',
+    incomes_title: 'Przychody',
+    incomes_subtitle: 'Każda pozycja liczona niezależnie. Etat aplikuje IRPF + składki SS. Autónomo aplikuje IRPF + cuotę autónomos po tramie. "Inne" to przychód netto bezpośrednio.',
+    add_employee: '+ Etat',
+    add_autonomo: '+ Autónomo',
+    add_other: '+ Inne',
+    benefits_title: 'Benefity i retribución flexible',
+    benefits_subtitle: 'Benefity rzeczowe z ulgą podatkową: bony żywnościowe, żłobek, transport, ubezpieczenie, plan emerytalny. Pomniejszają podstawę opodatkowania (stawka marginalna × benefit = oszczędność).',
+    add_benefit: '+ Dodaj benefit',
+    expenses_title: 'Wydatki miesięczne',
+    expenses_subtitle: 'Twoje wydatki stałe i zmienne. Każdy ma własny suwak. Suma odejmowana od miesięcznego dochodu netto rodziny.',
+    add_expense: '+ Dodaj wydatek',
+    tech_summary: 'Szczegóły techniczne wyliczenia podatkowego',
+    tech_body: '<h3 style="font-family: \'Cormorant Garamond\', serif; font-size: 22px; font-weight: 500; margin-bottom: 12px;">Progi IRPF państwowego 2026</h3><p style="font-size: 13px; margin-bottom: 10px;">0–12.450 €: 9,5% · 12.450–20.200 €: 12,0% · 20.200–35.200 €: 15,0% · 35.200–60.000 €: 18,5% · 60.000–300.000 €: 22,5% · &gt;300.000 €: 24,5%</p><p style="font-size: 13px; margin-bottom: 16px;">Do tego dochodzi <strong>skala autonomiczna</strong>, różna w każdej wspólnocie. Łączne stawki marginalne wynoszą około 19%–47–50%.</p><h3 style="font-family: \'Cormorant Garamond\', serif; font-size: 22px; font-weight: 500; margin: 18px 0 12px;">Cuota autónomos 2026 (RD 504/2022)</h3><p style="font-size: 13px; line-height: 1.7;">Liczona od miesięcznych rendimientos netos. Zakres od ~225 €/mies (rend. &lt;670€) do ~590 €/mies (&gt;6.000€).</p><h3 style="font-family: \'Cormorant Garamond\', serif; font-size: 22px; font-weight: 500; margin: 18px 0 12px;">Mínima osobiste i rodzinne</h3><p style="font-size: 13px; line-height: 1.7;">Mínimo osobiste: 5.550 €/rok. Na dziecko: 1. +2.400, 2. +2.700, 3. +4.000, 4.+ +4.500. Za każde poniżej 3 lat: +2.800. W małżeństwie dzielone 50/50.</p>',
+    income_employee_label: 'Etat — brutto roczne',
+    income_autonomo_label: 'Autónomo — brutto roczne',
+    income_other_label: 'Inny przychód — rocznie',
+    income_premium: 'Premia / zmienna (%)',
+    income_payments: 'Pagas (wypłaty) w roku',
+    income_payments_12: '12 (bez extras)',
+    income_payments_14: '14 (z extras)',
+    income_payments_16: '16 (sektor specyficzny)',
+    income_gastos: 'Gastos deducibles (% od brutto)',
+    income_gastos_tip: 'Domyślnie Hacienda dopuszcza ~7% gastos de difícil justificación.',
+    benefit_amount: 'Kwota',
+    benefit_amount_monthly: 'Kwota miesięczna',
+    benefit_amount_yearly: 'Kwota roczna',
+    benefit_period: 'Okres',
+    benefit_period_monthly: 'Miesięcznie',
+    benefit_period_yearly: 'Rocznie',
+    benefit_taxfree: 'Zwolnione z IRPF',
+    expense_amount: 'Kwota miesięczna',
+    range_min: 'Min',
+    range_max: 'Max',
+    range_step: 'Krok',
+    btn_duplicate_title: 'Duplikuj',
+    btn_delete_title: 'Usuń',
+    new_employee: 'Nowy etat',
+    new_autonomo: 'Nowy autónomo',
+    new_other: 'Inny przychód',
+    new_benefit: 'Nowy benefit',
+    new_expense: 'Nowy wydatek',
+    copy_suffix: ' (kopia)',
+    empty_list: 'Brak pozycji. Użyj przycisku powyżej, aby dodać.',
+    no_expenses: 'Brak wydatków',
+    results_label: 'Podsumowanie — miesięczne',
+    results_title: 'Twój budżet rodzinny',
+    r_income_section: 'Przychody netto',
+    r_income_total: 'Łącznie przychody netto',
+    r_benefit_section: 'Benefity (wartość mies.)',
+    r_benefit_total: 'Łącznie benefity',
+    r_benefit_tax_label: '+ Szacowana oszczędność podatkowa',
+    r_benefit_tax_suffix: '/mies',
+    r_expense_section: 'Wydatki',
+    r_expense_total: 'Łącznie wydatki',
+    r_balance: 'Zostaje na miesiąc',
+    r_per_month: '/ mies',
+    proj_y1: '1 rok',
+    proj_y3: '3 lata',
+    proj_y5: '5 lat',
+    detail_employee: 'IRPF {rate}% efekt. · {net}/rok',
+    detail_autonomo: 'Cuota {quota}/rok · IRPF {irpf}/rok',
+    detail_other: 'Netto bezpośrednio · {gross}/rok',
+    footer_p1: 'Kalkulator rodzinny — Hiszpania 2026 · dane lokalnie i w URL · bez śledzenia · bez ciasteczek',
+    footer_p2: 'Open source · MIT · Kalkulator <strong>orientacyjny</strong>. Nie zastępuje doradcy podatkowego.',
+    footer_italic: 'Zrobiony z troską dla rodzin podejmujących duże decyzje.',
+    toast_deleted: 'Usunięto',
+    toast_undo: 'Cofnij',
+    toast_copied: '✓ Link skopiowany',
+    toast_imported: '✓ Zaimportowano',
+    toast_import_error: 'Błąd importu',
+    toast_reset: '✓ Zresetowano',
+    confirm_reset: 'Zresetować do wartości domyślnych? Obecna konfiguracja zostanie utracona.'
+  },
+  en: {
+    _label: 'EN',
+    _locale_html: 'en',
+    title_doc: 'Family Calculator — Spain 2026',
+    header_label: 'Family calculator · ES 2026',
+    header_title: 'Your budget, <em>your assumptions</em>',
+    header_subtitle: 'An interactive calculator with real Spanish IRPF, autónomos and payroll math. Add entities, drag sliders, share the link — your full setup is saved in the URL and in your browser.',
+    btn_export: 'Export JSON',
+    btn_import: 'Import JSON',
+    btn_share: 'Copy link',
+    btn_reset: 'Reset',
+    btn_print: 'Print / PDF',
+    family_title: 'Family setup',
+    family_subtitle: 'Inputs that affect the IRPF calculation through personal and dependent minimums (Ley 35/2006, art. 57–58).',
+    family_region: 'Autonomous Community',
+    family_region_tip: 'Each region has its own autonomous IRPF scale. Madrid is the lowest, Catalonia/Valencia the highest.',
+    family_kids: 'Dependent children',
+    family_kids_tip: 'Per dependent: 1st +€2,400, 2nd +€2,700, 3rd +€4,000, 4th+ +€4,500. Plus €2,800 extra per child under 3.',
+    family_kids_under3: 'Of which under 3 years old',
+    family_currency: 'Currency',
+    region_estatal: 'Average state scale (generic)',
+    region_cataluna: 'Catalonia',
+    region_valencia: 'Valencia',
+    region_andalucia: 'Andalusia',
+    region_paisvasco: 'Basque Country (foral — approx.)',
+    region_navarra: 'Navarre (foral — approx.)',
+    kids_0: 'No children', kids_1: '1 child', kids_2: '2 children', kids_3: '3 children', kids_4: '4 children',
+    notes_summary: 'Notes on the calculation',
+    notes_body: '<strong>How it works.</strong> IRPF is computed as state scale (50%) + autonomous scale (50%). I apply the personal minimum (€5,550) and dependent minimums based on declared children, split 50/50 between two spouses (typical setup). For employee Social Security I use 6.35% on the base with the 2026 cap (~€59,060). For autónomos I apply the progressive monthly net-income scale (RD 504/2022).<br><br><strong>Limitations.</strong> This is an indicative tool. It does not replace a tax advisor. It does not include region-specific deductions (primary residence, donations, young-renter relief, etc.) nor the Beckham regime. Basque Country and Navarre use their own foral system — values are approximations.',
+    incomes_title: 'Income',
+    incomes_subtitle: 'Each entry is calculated independently. Payroll applies IRPF + Social Security. Autónomo applies IRPF + tier-based autónomos quota. "Other" is direct net income.',
+    add_employee: '+ Payroll',
+    add_autonomo: '+ Autónomo',
+    add_other: '+ Other',
+    benefits_title: 'Benefits & flexible compensation',
+    benefits_subtitle: 'Tax-advantaged in-kind benefits: meal vouchers, childcare, transit, health insurance, pension plan. They reduce taxable base (marginal rate × benefit = real saving).',
+    add_benefit: '+ Add benefit',
+    expenses_title: 'Monthly expenses',
+    expenses_subtitle: 'Your fixed and variable expenses. Each with its own slider. The sum is subtracted from net family monthly income.',
+    add_expense: '+ Add expense',
+    tech_summary: 'Technical details of the tax calculation',
+    tech_body: '<h3 style="font-family: \'Cormorant Garamond\', serif; font-size: 22px; font-weight: 500; margin-bottom: 12px;">State IRPF brackets 2026</h3><p style="font-size: 13px; margin-bottom: 10px;">0–€12,450: 9.5% · €12,450–20,200: 12.0% · €20,200–35,200: 15.0% · €35,200–60,000: 18.5% · €60,000–300,000: 22.5% · &gt;€300,000: 24.5%</p><p style="font-size: 13px; margin-bottom: 16px;">On top of that comes the <strong>autonomous scale</strong>, which varies by region. Total marginal rates run approximately from 19% up to 47–50%.</p><h3 style="font-family: \'Cormorant Garamond\', serif; font-size: 22px; font-weight: 500; margin: 18px 0 12px;">Autónomos quota 2026 (RD 504/2022)</h3><p style="font-size: 13px; line-height: 1.7;">Calculated on monthly net income. Ranges from ~€225/mo (income &lt;€670) to ~€590/mo (&gt;€6,000).</p><h3 style="font-family: \'Cormorant Garamond\', serif; font-size: 22px; font-weight: 500; margin: 18px 0 12px;">Personal & family minimums</h3><p style="font-size: 13px; line-height: 1.7;">Personal minimum: €5,550/year. Per dependent: 1st +€2,400, 2nd +€2,700, 3rd +€4,000, 4th+ +€4,500. Per under-3: +€2,800 each. Married couples split 50/50.</p>',
+    income_employee_label: 'Payroll (employee) — gross annual',
+    income_autonomo_label: 'Autónomo — gross annual',
+    income_other_label: 'Other income — annual',
+    income_premium: 'Bonus / variable (%)',
+    income_payments: 'Pay periods per year',
+    income_payments_12: '12 (no extras)',
+    income_payments_14: '14 (with extras)',
+    income_payments_16: '16 (specific sectors)',
+    income_gastos: 'Deductible expenses (% of gross)',
+    income_gastos_tip: 'By default Hacienda allows ~7% gastos de difícil justificación.',
+    benefit_amount: 'Amount',
+    benefit_amount_monthly: 'Monthly amount',
+    benefit_amount_yearly: 'Yearly amount',
+    benefit_period: 'Period',
+    benefit_period_monthly: 'Monthly',
+    benefit_period_yearly: 'Yearly',
+    benefit_taxfree: 'IRPF-exempt',
+    expense_amount: 'Monthly amount',
+    range_min: 'Min',
+    range_max: 'Max',
+    range_step: 'Step',
+    btn_duplicate_title: 'Duplicate',
+    btn_delete_title: 'Delete',
+    new_employee: 'New payroll',
+    new_autonomo: 'New autónomo',
+    new_other: 'Other income',
+    new_benefit: 'New benefit',
+    new_expense: 'New expense',
+    copy_suffix: ' (copy)',
+    empty_list: 'No entries. Use the button above to add one.',
+    no_expenses: 'No expenses added',
+    results_label: 'Summary — monthly',
+    results_title: 'Your family budget',
+    r_income_section: 'Net income',
+    r_income_total: 'Total net income',
+    r_benefit_section: 'Benefits (monthly value)',
+    r_benefit_total: 'Total benefits',
+    r_benefit_tax_label: '+ Estimated tax saving',
+    r_benefit_tax_suffix: '/mo',
+    r_expense_section: 'Expenses',
+    r_expense_total: 'Total expenses',
+    r_balance: 'Left over per month',
+    r_per_month: '/ mo',
+    proj_y1: '1 year',
+    proj_y3: '3 years',
+    proj_y5: '5 years',
+    detail_employee: 'IRPF {rate}% eff. · {net}/yr',
+    detail_autonomo: 'Quota {quota}/yr · IRPF {irpf}/yr',
+    detail_other: 'Net direct · {gross}/yr',
+    footer_p1: 'Family budget calculator — Spain 2026 · data stored locally and in URL · no tracking · no cookies',
+    footer_p2: 'Open source · MIT · This calculator is <strong>indicative</strong>. It does not replace a tax advisor.',
+    footer_italic: 'Built with care for families making big decisions.',
+    toast_deleted: 'Deleted',
+    toast_undo: 'Undo',
+    toast_copied: '✓ Link copied',
+    toast_imported: '✓ Imported',
+    toast_import_error: 'Import error',
+    toast_reset: '✓ Reset',
+    confirm_reset: 'Reset to defaults? Your current setup will be lost.'
+  }
+};
+
+let currentLang = 'es';
+
+function t(key, vars) {
+  let s = (I18N[currentLang] && I18N[currentLang][key]) || I18N.es[key] || key;
+  if (vars) {
+    for (const [k, v] of Object.entries(vars)) {
+      s = s.replace(new RegExp('\\{' + k + '\\}', 'g'), v);
+    }
+  }
+  return s;
+}
+
+function applyLanguage() {
+  document.documentElement.lang = (I18N[currentLang] && I18N[currentLang]._locale_html) || 'es';
+  document.title = t('title_doc');
+
+  // data-i18n: textContent or innerHTML
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    const val = t(key);
+    if (el.hasAttribute('data-i18n-html')) {
+      el.innerHTML = val;
+    } else {
+      el.textContent = val;
+    }
+  });
+
+  // data-i18n-attr: "attrName:key" (e.g., "data-tip:family_region_tip")
+  document.querySelectorAll('[data-i18n-attr]').forEach(el => {
+    const pairs = el.dataset.i18nAttr.split(',');
+    pairs.forEach(p => {
+      const [attr, k] = p.split(':');
+      if (attr && k) el.setAttribute(attr.trim(), t(k.trim()));
+    });
+  });
+
+  // Active button
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+  });
+}
+
+/* ============================================================
+   FISCAL CONSTANTS — Spain 2026
+   ============================================================ */
+
+const IRPF_ESTATAL = [
+  { limit: 12450, rate: 0.095 },
+  { limit: 20200, rate: 0.120 },
+  { limit: 35200, rate: 0.150 },
+  { limit: 60000, rate: 0.185 },
+  { limit: 300000, rate: 0.225 },
+  { limit: Infinity, rate: 0.245 }
+];
+
+const IRPF_AUTONOMICA = {
+  estatal: IRPF_ESTATAL,
+  madrid: [
+    { limit: 13362, rate: 0.085 },
+    { limit: 19004, rate: 0.107 },
+    { limit: 35425, rate: 0.128 },
+    { limit: 57320, rate: 0.174 },
+    { limit: Infinity, rate: 0.205 }
+  ],
+  cataluna: [
+    { limit: 12450, rate: 0.105 },
+    { limit: 17707, rate: 0.120 },
+    { limit: 21000, rate: 0.140 },
+    { limit: 33007, rate: 0.150 },
+    { limit: 53407, rate: 0.188 },
+    { limit: 90000, rate: 0.215 },
+    { limit: 120000, rate: 0.235 },
+    { limit: 175000, rate: 0.245 },
+    { limit: Infinity, rate: 0.255 }
+  ],
+  valencia: [
+    { limit: 12000, rate: 0.090 },
+    { limit: 22000, rate: 0.120 },
+    { limit: 32000, rate: 0.150 },
+    { limit: 42000, rate: 0.175 },
+    { limit: 52000, rate: 0.200 },
+    { limit: 65000, rate: 0.225 },
+    { limit: 80000, rate: 0.250 },
+    { limit: 120000, rate: 0.275 },
+    { limit: 175000, rate: 0.285 },
+    { limit: Infinity, rate: 0.295 }
+  ],
+  andalucia: [
+    { limit: 13000, rate: 0.095 },
+    { limit: 21000, rate: 0.120 },
+    { limit: 35200, rate: 0.150 },
+    { limit: 50000, rate: 0.185 },
+    { limit: 60000, rate: 0.225 },
+    { limit: Infinity, rate: 0.235 }
+  ],
+  galicia: [
+    { limit: 12985, rate: 0.090 },
+    { limit: 21068, rate: 0.118 },
+    { limit: 35200, rate: 0.158 },
+    { limit: 60000, rate: 0.185 },
+    { limit: Infinity, rate: 0.225 }
+  ],
+  paisvasco: [
+    { limit: 17920, rate: 0.230 },
+    { limit: 35840, rate: 0.280 },
+    { limit: 53760, rate: 0.350 },
+    { limit: 71680, rate: 0.400 },
+    { limit: 92310, rate: 0.450 },
+    { limit: 122160, rate: 0.470 },
+    { limit: 184850, rate: 0.490 },
+    { limit: Infinity, rate: 0.495 }
+  ],
+  navarra: [
+    { limit: 4080, rate: 0.130 },
+    { limit: 9255, rate: 0.220 },
+    { limit: 21068, rate: 0.250 },
+    { limit: 35372, rate: 0.280 },
+    { limit: 51251, rate: 0.365 },
+    { limit: 67043, rate: 0.400 },
+    { limit: 88251, rate: 0.420 },
+    { limit: 125195, rate: 0.450 },
+    { limit: 178511, rate: 0.470 },
+    { limit: 305015, rate: 0.490 },
+    { limit: Infinity, rate: 0.520 }
+  ]
+};
+
+const FORAL = ['paisvasco', 'navarra'];
+const SS_MAX_BASE = 59060;
+const SS_RATE_EMPLOYEE = 0.0635;
+const MIN_PERSONAL = 5550;
+const MIN_DESCENDIENTE = [2400, 2700, 4000, 4500, 4500];
+const MIN_MENOR_3 = 2800;
+
+const QUOTA_AUTONOMOS = [
+  { max: 670, q: 225 },
+  { max: 900, q: 240 },
+  { max: 1166.7, q: 265 },
+  { max: 1300, q: 291 },
+  { max: 1500, q: 294 },
+  { max: 1700, q: 294 },
+  { max: 1850, q: 350 },
+  { max: 2030, q: 370 },
+  { max: 2330, q: 390 },
+  { max: 2760, q: 415 },
+  { max: 3190, q: 440 },
+  { max: 3620, q: 465 },
+  { max: 4050, q: 495 },
+  { max: 6000, q: 530 },
+  { max: Infinity, q: 590 }
+];
+
+const CURRENCIES = {
+  EUR: { symbol: '€', locale: 'es-ES' },
+  USD: { symbol: '$', locale: 'en-US' },
+  GBP: { symbol: '£', locale: 'en-GB' },
+  PLN: { symbol: 'zł', locale: 'pl-PL' }
+};
+
+/* ============================================================
+   STATE
+   ============================================================ */
+
+function id() {
+  return 'e' + Math.random().toString(36).substr(2, 9);
+}
+
+function defaultState() {
+  return {
+    lang: 'es',
+    family: { region: 'estatal', kids: 2, kidsUnder3: 1, currency: 'EUR' },
+    incomes: [
+      { id: id(), type: 'income', subtype: 'employee', name: 'Nómina principal',
+        gross: 45000, min: 0, max: 120000, step: 500, premium: 0, paymentsPerYear: 14 },
+      { id: id(), type: 'income', subtype: 'autonomo', name: 'Pareja autónoma',
+        gross: 36000, min: 0, max: 120000, step: 500, gastosDeducibles: 7 }
+    ],
+    benefits: [
+      { id: id(), type: 'benefit', name: 'Tickets restaurante', amount: 220, min: 0, max: 500, step: 10, period: 'monthly', taxFree: true },
+      { id: id(), type: 'benefit', name: 'Seguro médico familiar', amount: 1500, min: 0, max: 5000, step: 100, period: 'yearly', taxFree: true }
+    ],
+    expenses: [
+      { id: id(), type: 'expense', name: 'Alquiler / hipoteca', amount: 1100, min: 300, max: 3000, step: 50 },
+      { id: id(), type: 'expense', name: 'Comida y supermercado', amount: 700, min: 200, max: 2000, step: 50 },
+      { id: id(), type: 'expense', name: 'Suministros (luz, agua, gas, internet)', amount: 220, min: 0, max: 600, step: 10 },
+      { id: id(), type: 'expense', name: 'Transporte', amount: 180, min: 0, max: 800, step: 20 },
+      { id: id(), type: 'expense', name: 'Educación de los hijos', amount: 350, min: 0, max: 2000, step: 50 },
+      { id: id(), type: 'expense', name: 'Ocio y restaurantes', amount: 250, min: 0, max: 1500, step: 50 }
+    ]
+  };
+}
+
+let state;
+let undoSnapshot = null;
+let undoTimer = null;
+
+function loadState() {
+  try {
+    if (location.hash && location.hash.length > 1) {
+      const decoded = JSON.parse(decodeURIComponent(atob(location.hash.slice(1))));
+      if (decoded && decoded.family) return decoded;
+    }
+  } catch(e) {}
+  try {
+    const stored = localStorage.getItem('calc-familiar-v1');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed && parsed.family) return parsed;
+    }
+  } catch(e) {}
+  return defaultState();
+}
+
+function saveState() {
+  try { localStorage.setItem('calc-familiar-v1', JSON.stringify(state)); } catch(e) {}
+}
+
+function syncURL() {
+  try {
+    const encoded = btoa(encodeURIComponent(JSON.stringify(state)));
+    history.replaceState(null, '', '#' + encoded);
+  } catch(e) {}
+}
+
+/* ============================================================
+   FISCAL FUNCTIONS
+   ============================================================ */
+
+function applyScale(base, scale) {
+  if (base <= 0) return 0;
+  let tax = 0, prev = 0;
+  for (const b of scale) {
+    if (base <= prev) break;
+    const taxable = Math.min(base, b.limit) - prev;
+    tax += taxable * b.rate;
+    prev = b.limit;
+    if (base <= b.limit) break;
+  }
+  return tax;
+}
+
+function calcIRPF(base, region) {
+  if (base <= 0) return 0;
+  const auton = IRPF_AUTONOMICA[region] || IRPF_AUTONOMICA.estatal;
+  if (FORAL.includes(region)) return applyScale(base, auton);
+  return applyScale(base, IRPF_ESTATAL) + applyScale(base, auton);
+}
+
+function calcMinimo(family, splitFactor) {
+  let descTotal = 0;
+  for (let i = 0; i < family.kids; i++) {
+    descTotal += MIN_DESCENDIENTE[Math.min(i, MIN_DESCENDIENTE.length - 1)];
+  }
+  descTotal += family.kidsUnder3 * MIN_MENOR_3;
+  return MIN_PERSONAL + descTotal * splitFactor;
+}
+
+function calcEmployeeNet(grossYear, premium, family, paymentsPerYear) {
+  const totalGross = grossYear * (1 + (premium || 0) / 100);
+  const ssBase = Math.min(totalGross, SS_MAX_BASE);
+  const ss = ssBase * SS_RATE_EMPLOYEE;
+  const irpfBase = totalGross - ss;
+  const splitFactor = state.incomes.length > 1 ? 0.5 : 1;
+  const minimo = calcMinimo(family, splitFactor);
+  const irpfFull = calcIRPF(irpfBase, family.region);
+  const irpfMinimo = calcIRPF(minimo, family.region);
+  const irpf = Math.max(0, irpfFull - irpfMinimo);
+  const netYear = totalGross - ss - irpf;
+  return {
+    grossYear: totalGross, netYear: netYear, netMonthly: netYear / 12,
+    netPerPayment: netYear / (paymentsPerYear || 12),
+    irpf: irpf, ss: ss,
+    effectiveRate: totalGross > 0 ? (ss + irpf) / totalGross : 0
+  };
+}
+
+function calcAutonomoNet(grossYear, gastosDeduciblesPct, family) {
+  if (grossYear <= 0) return { grossYear: 0, netYear: 0, netMonthly: 0, irpf: 0, quota: 0, effectiveRate: 0 };
+  let quotaMonthly = 300;
+  for (let iter = 0; iter < 5; iter++) {
+    const quotaYear = quotaMonthly * 12;
+    const gastos = grossYear * (gastosDeduciblesPct || 0) / 100;
+    const rendNetoYear = Math.max(0, grossYear - quotaYear - gastos);
+    const rendNetoMonthly = rendNetoYear / 12;
+    const tramo = QUOTA_AUTONOMOS.find(t => rendNetoMonthly < t.max);
+    quotaMonthly = tramo ? tramo.q : 590;
+  }
+  const quotaYear = quotaMonthly * 12;
+  const gastos = grossYear * (gastosDeduciblesPct || 0) / 100;
+  const rendNetoYear = Math.max(0, grossYear - quotaYear - gastos);
+  const splitFactor = state.incomes.length > 1 ? 0.5 : 1;
+  const minimo = calcMinimo(family, splitFactor);
+  const irpfFull = calcIRPF(rendNetoYear, family.region);
+  const irpfMinimo = calcIRPF(minimo, family.region);
+  const irpf = Math.max(0, irpfFull - irpfMinimo);
+  const netYear = grossYear - quotaYear - irpf;
+  return {
+    grossYear: grossYear, netYear: netYear, netMonthly: netYear / 12,
+    irpf: irpf, quota: quotaYear, rendNeto: rendNetoYear,
+    effectiveRate: grossYear > 0 ? (quotaYear + irpf) / grossYear : 0
+  };
+}
+
+function marginalRate(grossYear, region) {
+  const auton = IRPF_AUTONOMICA[region] || IRPF_ESTATAL;
+  const base = grossYear * 0.93;
+  let estatalRate = 0;
+  for (const b of IRPF_ESTATAL) {
+    if (base > b.limit) continue;
+    estatalRate = b.rate;
+    break;
+  }
+  let autonRate = 0;
+  for (const b of auton) {
+    if (base > b.limit) continue;
+    autonRate = b.rate;
+    break;
+  }
+  if (FORAL.includes(region)) return autonRate;
+  return estatalRate + autonRate;
+}
+
+/* ============================================================
+   FORMATTERS
+   ============================================================ */
+
+function fmt(amount) {
+  const cur = CURRENCIES[state.family.currency] || CURRENCIES.EUR;
+  const rounded = Math.round(amount);
+  const formatted = new Intl.NumberFormat(cur.locale, {
+    style: 'decimal', maximumFractionDigits: 0
+  }).format(rounded);
+  return formatted + ' ' + cur.symbol;
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ============================================================
+   ENTITY RENDERING
+   ============================================================ */
+
+function renderAll() {
+  renderEntities('income', 'list-income');
+  renderEntities('benefit', 'list-benefit');
+  renderEntities('expense', 'list-expense');
+  document.getElementById('f-region').value = state.family.region;
+  document.getElementById('f-kids').value = state.family.kids;
+  document.getElementById('f-kids-under3').value = state.family.kidsUnder3;
+  document.getElementById('f-currency').value = state.family.currency;
+  recalc();
+}
+
+function renderEntities(type, containerId) {
+  const container = document.getElementById(containerId);
+  const items = type === 'income' ? state.incomes : (type === 'benefit' ? state.benefits : state.expenses);
+  if (items.length === 0) {
+    container.innerHTML = '<div class="empty-state">' + t('empty_list') + '</div>';
+    return;
+  }
+  container.innerHTML = items.map(item => entityHTML(item)).join('');
+}
+
+function entityHTML(item) {
+  if (item.type === 'income') return incomeHTML(item);
+  if (item.type === 'benefit') return benefitHTML(item);
+  return expenseHTML(item);
+}
+
+function incomeHTML(item) {
+  const min = item.min ?? 0;
+  const max = item.max ?? 120000;
+  const step = item.step ?? 500;
+
+  let label = t('income_employee_label');
+  if (item.subtype === 'autonomo') label = t('income_autonomo_label');
+  if (item.subtype === 'other') label = t('income_other_label');
+
+  let extraFields = '';
+  if (item.subtype === 'employee') {
+    extraFields = `
+      <div class="entity-meta">
+        <div class="meta-field">
+          <label>${t('income_premium')}</label>
+          <input type="number" data-field="premium" value="${item.premium || 0}" min="0" max="100" step="1">
+        </div>
+        <div class="meta-field">
+          <label>${t('income_payments')}</label>
+          <select data-field="paymentsPerYear">
+            <option value="12" ${item.paymentsPerYear == 12 ? 'selected' : ''}>${t('income_payments_12')}</option>
+            <option value="14" ${item.paymentsPerYear == 14 ? 'selected' : ''}>${t('income_payments_14')}</option>
+            <option value="16" ${item.paymentsPerYear == 16 ? 'selected' : ''}>${t('income_payments_16')}</option>
+          </select>
+        </div>
+      </div>
+    `;
+  } else if (item.subtype === 'autonomo') {
+    extraFields = `
+      <div class="entity-meta">
+        <div class="meta-field" style="grid-column: 1/-1;">
+          <label>${t('income_gastos')} <span class="help" data-tip="${escapeHtml(t('income_gastos_tip'))}">?</span></label>
+          <input type="number" data-field="gastosDeducibles" value="${item.gastosDeducibles || 7}" min="0" max="50" step="1">
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="entity" data-id="${item.id}" data-type="income">
+      <div class="entity-header">
+        <input type="text" class="entity-name-input" data-field="name" value="${escapeHtml(item.name)}">
+        <div class="entity-controls">
+          <button type="button" class="entity-btn duplicate" data-action="duplicate" title="${t('btn_duplicate_title')}">⎘</button>
+          <button type="button" class="entity-btn" data-action="delete" title="${t('btn_delete_title')}">×</button>
+        </div>
+      </div>
+      <div class="entity-row">
+        <div class="field-label">
+          <label>${escapeHtml(label)}</label>
+          <span class="value-display" data-display="${item.id}">${fmt(item.gross)}</span>
+        </div>
+        <input type="range" data-field="gross" min="${min}" max="${max}" step="${step}" value="${item.gross}">
+        <div class="range-bounds">
+          <div class="range-bounds-item"><label>${t('range_min')}</label><input type="number" data-field="min" value="${min}" step="1000"></div>
+          <div class="range-bounds-item"><label>${t('range_max')}</label><input type="number" data-field="max" value="${max}" step="1000"></div>
+          <div class="range-bounds-item"><label>${t('range_step')}</label><input type="number" data-field="step" value="${step}" step="100" min="1"></div>
+        </div>
+      </div>
+      ${extraFields}
+    </div>
+  `;
+}
+
+function benefitHTML(item) {
+  const min = item.min ?? 0;
+  const max = item.max ?? 5000;
+  const step = item.step ?? 10;
+  const period = item.period || 'monthly';
+  const label = period === 'yearly' ? t('benefit_amount_yearly') : t('benefit_amount_monthly');
+
+  return `
+    <div class="entity" data-id="${item.id}" data-type="benefit">
+      <div class="entity-header">
+        <input type="text" class="entity-name-input" data-field="name" value="${escapeHtml(item.name)}">
+        <div class="entity-controls">
+          <button type="button" class="entity-btn duplicate" data-action="duplicate" title="${t('btn_duplicate_title')}">⎘</button>
+          <button type="button" class="entity-btn" data-action="delete" title="${t('btn_delete_title')}">×</button>
+        </div>
+      </div>
+      <div class="entity-row">
+        <div class="field-label">
+          <label>${escapeHtml(label)}</label>
+          <span class="value-display" data-display="${item.id}">${fmt(item.amount)}</span>
+        </div>
+        <input type="range" data-field="amount" min="${min}" max="${max}" step="${step}" value="${item.amount}">
+        <div class="range-bounds">
+          <div class="range-bounds-item"><label>${t('range_min')}</label><input type="number" data-field="min" value="${min}" step="10"></div>
+          <div class="range-bounds-item"><label>${t('range_max')}</label><input type="number" data-field="max" value="${max}" step="100"></div>
+          <div class="range-bounds-item"><label>${t('range_step')}</label><input type="number" data-field="step" value="${step}" step="1" min="1"></div>
+        </div>
+      </div>
+      <div class="entity-meta">
+        <div class="meta-field">
+          <label>${t('benefit_period')}</label>
+          <select data-field="period">
+            <option value="monthly" ${period === 'monthly' ? 'selected' : ''}>${t('benefit_period_monthly')}</option>
+            <option value="yearly" ${period === 'yearly' ? 'selected' : ''}>${t('benefit_period_yearly')}</option>
+          </select>
+        </div>
+        <label class="checkbox-wrap">
+          <input type="checkbox" data-field="taxFree" ${item.taxFree !== false ? 'checked' : ''}>
+          <span>${t('benefit_taxfree')}</span>
+        </label>
+      </div>
+    </div>
+  `;
+}
+
+function expenseHTML(item) {
+  const min = item.min ?? 0;
+  const max = item.max ?? 3000;
+  const step = item.step ?? 50;
+  return `
+    <div class="entity" data-id="${item.id}" data-type="expense">
+      <div class="entity-header">
+        <input type="text" class="entity-name-input" data-field="name" value="${escapeHtml(item.name)}">
+        <div class="entity-controls">
+          <button type="button" class="entity-btn duplicate" data-action="duplicate" title="${t('btn_duplicate_title')}">⎘</button>
+          <button type="button" class="entity-btn" data-action="delete" title="${t('btn_delete_title')}">×</button>
+        </div>
+      </div>
+      <div class="entity-row">
+        <div class="field-label">
+          <label>${t('expense_amount')}</label>
+          <span class="value-display" data-display="${item.id}">${fmt(item.amount)}</span>
+        </div>
+        <input type="range" data-field="amount" min="${min}" max="${max}" step="${step}" value="${item.amount}">
+        <div class="range-bounds">
+          <div class="range-bounds-item"><label>${t('range_min')}</label><input type="number" data-field="min" value="${min}" step="10"></div>
+          <div class="range-bounds-item"><label>${t('range_max')}</label><input type="number" data-field="max" value="${max}" step="100"></div>
+          <div class="range-bounds-item"><label>${t('range_step')}</label><input type="number" data-field="step" value="${step}" step="1" min="1"></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   ENTITY OPERATIONS
+   ============================================================ */
+
+function getList(type) {
+  if (type === 'income') return state.incomes;
+  if (type === 'benefit') return state.benefits;
+  return state.expenses;
+}
+function setList(type, list) {
+  if (type === 'income') state.incomes = list;
+  else if (type === 'benefit') state.benefits = list;
+  else state.expenses = list;
+}
+
+function findItem(type, itemId) {
+  return getList(type).find(x => x.id === itemId);
+}
+
+function deleteItem(type, itemId) {
+  const list = getList(type);
+  const idx = list.findIndex(x => x.id === itemId);
+  if (idx < 0) return;
+  // Snapshot for undo
+  undoSnapshot = { type: type, item: JSON.parse(JSON.stringify(list[idx])), index: idx };
+  list.splice(idx, 1);
+  saveState();
+  syncURL();
+  renderAll();
+  showToastUndo(t('toast_deleted'));
+}
+
+function undoDelete() {
+  if (!undoSnapshot) return;
+  const list = getList(undoSnapshot.type);
+  list.splice(undoSnapshot.index, 0, undoSnapshot.item);
+  undoSnapshot = null;
+  if (undoTimer) clearTimeout(undoTimer);
+  saveState();
+  syncURL();
+  renderAll();
+  hideToast();
+}
+
+function duplicateItem(type, itemId) {
+  const list = getList(type);
+  const idx = list.findIndex(x => x.id === itemId);
+  if (idx < 0) return;
+  const copy = JSON.parse(JSON.stringify(list[idx]));
+  copy.id = id();
+  copy.name = list[idx].name + t('copy_suffix');
+  list.splice(idx + 1, 0, copy);
+  saveState();
+  syncURL();
+  renderAll();
+}
+
+function addEntity(type, subtype) {
+  let item;
+  if (type === 'income') {
+    item = {
+      id: id(), type: 'income', subtype: subtype || 'employee',
+      name: subtype === 'autonomo' ? t('new_autonomo') : (subtype === 'other' ? t('new_other') : t('new_employee')),
+      gross: subtype === 'other' ? 12000 : 35000,
+      min: 0, max: 120000, step: 500
+    };
+    if (subtype === 'employee') { item.premium = 0; item.paymentsPerYear = 14; }
+    if (subtype === 'autonomo') { item.gastosDeducibles = 7; }
+    state.incomes.push(item);
+  } else if (type === 'benefit') {
+    item = { id: id(), type: 'benefit', name: t('new_benefit'), amount: 100, min: 0, max: 1000, step: 10, period: 'monthly', taxFree: true };
+    state.benefits.push(item);
+  } else {
+    item = { id: id(), type: 'expense', name: t('new_expense'), amount: 100, min: 0, max: 1000, step: 10 };
+    state.expenses.push(item);
+  }
+  saveState();
+  syncURL();
+  renderAll();
+}
+
+/* ============================================================
+   CALCULATION & RENDER
+   ============================================================ */
+
+function recalc() {
+  const family = state.family;
+  let totalIncomeMonthly = 0;
+  let incomeRows = [];
+
+  state.incomes.forEach(inc => {
+    if (inc.subtype === 'employee') {
+      const r = calcEmployeeNet(inc.gross, inc.premium || 0, family, inc.paymentsPerYear || 12);
+      totalIncomeMonthly += r.netMonthly;
+      incomeRows.push({
+        name: inc.name, value: r.netMonthly,
+        detail: t('detail_employee', { rate: (r.effectiveRate * 100).toFixed(1), net: fmt(r.netYear) })
+      });
+    } else if (inc.subtype === 'autonomo') {
+      const r = calcAutonomoNet(inc.gross, inc.gastosDeducibles || 0, family);
+      totalIncomeMonthly += r.netMonthly;
+      incomeRows.push({
+        name: inc.name, value: r.netMonthly,
+        detail: t('detail_autonomo', { quota: fmt(r.quota), irpf: fmt(r.irpf) })
+      });
+    } else {
+      const monthly = (inc.gross || 0) / 12;
+      totalIncomeMonthly += monthly;
+      incomeRows.push({
+        name: inc.name, value: monthly,
+        detail: t('detail_other', { gross: fmt(inc.gross || 0) })
+      });
+    }
+  });
+
+  let totalBenefitMonthly = 0, benefitRows = [], benefitTaxSavings = 0;
+  const primaryGross = (state.incomes.find(x => x.subtype === 'employee') || {}).gross || 0;
+  const margRate = primaryGross > 0 ? marginalRate(primaryGross, family.region) : 0;
+
+  state.benefits.forEach(b => {
+    const monthly = b.period === 'yearly' ? (b.amount || 0) / 12 : (b.amount || 0);
+    totalBenefitMonthly += monthly;
+    benefitRows.push({ name: b.name, value: monthly });
+    if (b.taxFree !== false) benefitTaxSavings += monthly * margRate;
+  });
+
+  let totalExpenseMonthly = 0, expenseRows = [];
+  state.expenses.forEach(e => {
+    totalExpenseMonthly += (e.amount || 0);
+    expenseRows.push({ name: e.name, value: (e.amount || 0) });
+  });
+
+  const balance = totalIncomeMonthly - totalExpenseMonthly;
+
+  document.getElementById('r-income-list').innerHTML = incomeRows.map(r => `
+    <div class="res-row"><span class="lbl">${escapeHtml(r.name)}</span><span class="val">${fmt(r.value)}</span></div>
+    <div class="res-row detail"><span class="lbl">${escapeHtml(r.detail)}</span><span class="val"></span></div>
+  `).join('') || '<div class="res-row detail"><span class="lbl">—</span><span class="val"></span></div>';
+  document.getElementById('r-income-total').textContent = fmt(totalIncomeMonthly);
+
+  if (benefitRows.length > 0) {
+    document.getElementById('r-benefit-section').style.display = 'block';
+    document.getElementById('r-benefit-list').innerHTML = benefitRows.map(r => `
+      <div class="res-row"><span class="lbl">${escapeHtml(r.name)}</span><span class="val">${fmt(r.value)}</span></div>
+    `).join('');
+    document.getElementById('r-benefit-total').textContent = fmt(totalBenefitMonthly);
+    document.getElementById('r-benefit-tax').textContent = '+ ' + fmt(benefitTaxSavings) + ' ' + t('r_benefit_tax_suffix');
+  } else {
+    document.getElementById('r-benefit-section').style.display = 'none';
+  }
+
+  if (expenseRows.length > 0) {
+    document.getElementById('r-expense-list').innerHTML = expenseRows.map(r => `
+      <div class="res-row"><span class="lbl">${escapeHtml(r.name)}</span><span class="val">${fmt(r.value)}</span></div>
+    `).join('');
+  } else {
+    document.getElementById('r-expense-list').innerHTML = '<div class="res-row detail"><span class="lbl">' + t('no_expenses') + '</span><span class="val"></span></div>';
+  }
+  document.getElementById('r-expense-total').textContent = fmt(totalExpenseMonthly);
+
+  const totalBox = document.getElementById('r-total-box');
+  totalBox.classList.toggle('negative', balance < 0);
+
+  document.getElementById('r-monthly').textContent = (balance >= 0 ? '+' : '') + fmt(balance);
+  document.getElementById('r-y1').textContent = fmt(balance * 12);
+  document.getElementById('r-y3').textContent = fmt(balance * 36);
+  document.getElementById('r-y5').textContent = fmt(balance * 60);
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+
+const toastEl = document.getElementById('toast');
+const toastMsg = document.getElementById('toast-msg');
+let toastTimer = null;
+
+function showToast(msg, ms) {
+  toastEl.classList.remove('has-action');
+  toastMsg.textContent = msg;
+  // Clear any extra children
+  while (toastEl.children.length > 1) toastEl.removeChild(toastEl.lastChild);
+  toastEl.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms || 1800);
+}
+
+function showToastUndo(msg) {
+  while (toastEl.children.length > 1) toastEl.removeChild(toastEl.lastChild);
+  toastMsg.textContent = msg + ' ';
+  const undoBtn = document.createElement('button');
+  undoBtn.className = 'toast-action';
+  undoBtn.textContent = t('toast_undo');
+  undoBtn.onclick = (e) => { e.stopPropagation(); undoDelete(); };
+  toastEl.appendChild(undoBtn);
+  toastEl.classList.add('show', 'has-action');
+  if (toastTimer) clearTimeout(toastTimer);
+  if (undoTimer) clearTimeout(undoTimer);
+  toastTimer = setTimeout(() => {
+    toastEl.classList.remove('show', 'has-action');
+  }, 4500);
+  undoTimer = setTimeout(() => {
+    undoSnapshot = null;
+  }, 4500);
+}
+
+function hideToast() {
+  toastEl.classList.remove('show', 'has-action');
+  if (toastTimer) clearTimeout(toastTimer);
+}
+
+/* ============================================================
+   EVENT DELEGATION (ROBUST FOR ANY ADDED ELEMENT)
+   ============================================================ */
+
+// Delegate all entity action button clicks at document level
+document.addEventListener('click', (e) => {
+  // Action buttons (delete, duplicate)
+  const actionBtn = e.target.closest('[data-action]');
+  if (actionBtn) {
+    const entity = actionBtn.closest('.entity');
+    if (!entity) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const itemId = entity.dataset.id;
+    const type = entity.dataset.type;
+    const action = actionBtn.dataset.action;
+    if (action === 'delete') {
+      deleteItem(type, itemId);
+    } else if (action === 'duplicate') {
+      duplicateItem(type, itemId);
+    }
+    return;
+  }
+
+  // Add entity buttons
+  const addBtn = e.target.closest('[data-add]');
+  if (addBtn) {
+    e.preventDefault();
+    addEntity(addBtn.dataset.add, addBtn.dataset.subtype);
+    return;
+  }
+
+  // Lang switcher
+  const langBtn = e.target.closest('.lang-btn');
+  if (langBtn) {
+    e.preventDefault();
+    setLanguage(langBtn.dataset.lang);
+    return;
+  }
+});
+
+// Delegate input/change events at document level
+function handleFieldEvent(e) {
+  const input = e.target.closest('[data-field]');
+  if (!input) return;
+  const entity = input.closest('.entity');
+  if (!entity) return;
+  const itemId = entity.dataset.id;
+  const type = entity.dataset.type;
+  const item = findItem(type, itemId);
+  if (!item) return;
+  const field = input.dataset.field;
+
+  let val;
+  if (input.type === 'checkbox') val = input.checked;
+  else if (input.type === 'number' || input.type === 'range') {
+    val = parseFloat(input.value);
+    if (Number.isNaN(val)) val = 0;
+  } else val = input.value;
+
+  // Coerce known numeric fields from selects
+  if (field === 'paymentsPerYear') val = parseInt(val) || 12;
+
+  item[field] = val;
+
+  // Live update of slider readout
+  if (field === 'amount' || field === 'gross') {
+    const display = entity.querySelector('[data-display="' + itemId + '"]');
+    if (display) display.textContent = fmt(val);
+  }
+
+  // If min/max/step changed via number inputs, update the corresponding range
+  if (field === 'min' || field === 'max' || field === 'step') {
+    const range = entity.querySelector('input[type="range"]');
+    if (range) {
+      // Apply new bounds
+      if (field === 'min') range.min = val;
+      else if (field === 'max') range.max = val;
+      else range.step = val;
+      // Clamp current value to new bounds
+      const current = parseFloat(range.value);
+      const newMin = parseFloat(range.min);
+      const newMax = parseFloat(range.max);
+      if (current < newMin) {
+        range.value = newMin;
+        const fld = range.dataset.field;
+        if (fld === 'amount' || fld === 'gross') {
+          item[fld] = newMin;
+          const display = entity.querySelector('[data-display="' + itemId + '"]');
+          if (display) display.textContent = fmt(newMin);
+        }
+      }
+      if (current > newMax) {
+        range.value = newMax;
+        const fld = range.dataset.field;
+        if (fld === 'amount' || fld === 'gross') {
+          item[fld] = newMax;
+          const display = entity.querySelector('[data-display="' + itemId + '"]');
+          if (display) display.textContent = fmt(newMax);
+        }
+      }
+    }
+  }
+
+  // If period changed for benefit, re-render that entity to update the label
+  if (field === 'period') {
+    saveState();
+    syncURL();
+    renderAll();
+    return;
+  }
+
+  saveState();
+  syncURL();
+  recalc();
+}
+
+document.addEventListener('input', handleFieldEvent);
+document.addEventListener('change', handleFieldEvent);
+
+/* ============================================================
+   GLOBAL ACTIONS
+   ============================================================ */
+
+document.querySelectorAll('#f-region, #f-kids, #f-kids-under3, #f-currency').forEach(el => {
+  el.addEventListener('change', () => {
+    state.family.region = document.getElementById('f-region').value;
+    state.family.kids = parseInt(document.getElementById('f-kids').value);
+    state.family.kidsUnder3 = parseInt(document.getElementById('f-kids-under3').value);
+    state.family.currency = document.getElementById('f-currency').value;
+    saveState();
+    syncURL();
+    renderAll();
+  });
+});
+
+document.getElementById('btn-export').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'budget-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+});
+
+document.getElementById('btn-import').addEventListener('click', () => {
+  document.getElementById('file-import').click();
+});
+document.getElementById('file-import').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      if (!parsed || !parsed.family) throw new Error('Invalid format');
+      state = parsed;
+      if (state.lang) currentLang = state.lang;
+      saveState();
+      syncURL();
+      applyLanguage();
+      renderAll();
+      showToast(t('toast_imported'));
+    } catch(err) {
+      showToast(t('toast_import_error') + ': ' + err.message, 3000);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+document.getElementById('btn-share').addEventListener('click', () => {
+  syncURL();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(location.href).then(() => {
+      showToast(t('toast_copied'));
+    }).catch(() => {
+      window.prompt(t('btn_share') + ':', location.href);
+    });
+  } else {
+    window.prompt(t('btn_share') + ':', location.href);
+  }
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  if (!window.confirm(t('confirm_reset'))) return;
+  state = defaultState();
+  state.lang = currentLang;
+  saveState();
+  history.replaceState(null, '', location.pathname);
+  renderAll();
+  showToast(t('toast_reset'));
+});
+
+document.getElementById('btn-print').addEventListener('click', () => {
+  window.print();
+});
+
+/* ============================================================
+   LANGUAGE
+   ============================================================ */
+
+function setLanguage(lang) {
+  if (!I18N[lang]) return;
+  currentLang = lang;
+  state.lang = lang;
+  saveState();
+  syncURL();
+  applyLanguage();
+  renderAll();
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+
+state = loadState();
+if (state.lang && I18N[state.lang]) currentLang = state.lang;
+else {
+  // Auto-detect from browser language
+  const navLang = (navigator.language || 'es').slice(0, 2).toLowerCase();
+  if (I18N[navLang]) currentLang = navLang;
+  state.lang = currentLang;
+}
+applyLanguage();
+renderAll();
+</script>
+
+</body>
+</html>
