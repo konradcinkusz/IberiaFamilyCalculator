@@ -1,5 +1,6 @@
 # Family Budget Calculator — Spain 2026
 
+[![pages-build-deployment](https://github.com/konradcinkusz/IberiaFamilyCalculator/actions/workflows/pages/pages-build-deployment/badge.svg?branch=master)](https://github.com/konradcinkusz/IberiaFamilyCalculator/actions/workflows/pages/pages-build-deployment)
 [![GitHub Pages](https://img.shields.io/badge/Live%20demo-GitHub%20Pages-brightgreen?logo=github)](https://konradcinkusz.github.io/IberiaFamilyCalculator/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.txt)
 
