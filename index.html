@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Calculadora Familiar — España 2026</title>
 <meta name="description" content="Calculadora interactiva de presupuesto familiar con cálculo de IRPF español, autónomos y nómina. Configurable, exportable y de código abierto.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="fonts/fonts.css">
 <style>
   :root {
     --cream: #F5F0E8;
@@ -768,9 +766,120 @@
     .res-total { background: #f0f0f0 !important; }
     .res-total * { color: black !important; }
   }
+
+  /* ---- Disclaimer modal ---- */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,20,16,0.72);
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(2px);
+  }
+  .modal-backdrop.hidden { display: none; }
+  .modal {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--terracotta);
+    border-radius: 2px;
+    max-width: 560px;
+    width: 100%;
+    padding: 36px 32px 28px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.22);
+    position: relative;
+  }
+  .modal-icon {
+    font-size: 28px;
+    line-height: 1;
+    margin-bottom: 14px;
+  }
+  .modal h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--deep);
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+  }
+  .modal-subtitle {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--terracotta);
+    margin-bottom: 18px;
+  }
+  .modal-body {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .modal-body ul {
+    margin: 10px 0 10px 18px;
+    padding: 0;
+  }
+  .modal-body ul li { margin-bottom: 5px; }
+  .modal-body strong { color: var(--deep); }
+  .modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+  }
+  .modal-legal {
+    font-size: 10px;
+    color: var(--muted-light);
+    letter-spacing: 0.5px;
+    line-height: 1.5;
+  }
+  .btn-modal-accept {
+    background: var(--terracotta);
+    color: var(--cream);
+    border: none;
+    padding: 11px 28px;
+    border-radius: 2px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .btn-modal-accept:hover { background: var(--terracotta-dark); }
+  @media (max-width: 600px) {
+    .modal { padding: 26px 20px 22px; }
+    .modal-footer { flex-direction: column; align-items: stretch; }
+    .btn-modal-accept { text-align: center; }
+  }
+  @media print {
+    .modal-backdrop { display: none !important; }
+  }
 </style>
 </head>
 <body>
+
+<!-- Disclaimer modal -->
+<div class="modal-backdrop hidden" id="disclaimer-backdrop" role="dialog" aria-modal="true" aria-labelledby="disclaimer-title">
+  <div class="modal">
+    <div class="modal-icon">⚖️</div>
+    <div class="modal-subtitle" id="disclaimer-subtitle" data-i18n="disclaimer_subtitle">Aviso importante</div>
+    <h2 id="disclaimer-title" data-i18n="disclaimer_title">Calculadora orientativa</h2>
+    <div class="modal-body" id="disclaimer-body" data-i18n="disclaimer_body" data-i18n-html></div>
+    <div class="modal-footer">
+      <div class="modal-legal" data-i18n="disclaimer_legal"></div>
+      <button class="btn-modal-accept" id="btn-disclaimer-accept" data-i18n="disclaimer_accept">Entendido — continuar</button>
+    </div>
+  </div>
+</div>
 
 <header class="header">
   <div class="header-inner">
@@ -1069,7 +1178,12 @@ const I18N = {
     toast_imported: '✓ Importado',
     toast_import_error: 'Error al importar',
     toast_reset: '✓ Reiniciado',
-    confirm_reset: '¿Reiniciar a valores por defecto? Se perderá tu configuración actual.'
+    confirm_reset: '¿Reiniciar a valores por defecto? Se perderá tu configuración actual.',
+    disclaimer_subtitle: 'Aviso importante',
+    disclaimer_title: 'Calculadora orientativa',
+    disclaimer_body: '<p>Esta herramienta es de carácter <strong>meramente orientativo</strong> y no constituye asesoramiento fiscal, financiero ni legal de ningún tipo.</p><ul><li>Los cálculos de IRPF, Seguridad Social y cuota de autónomos son <strong>aproximaciones</strong> basadas en la normativa vigente a 2026 y pueden diferir de la liquidación real.</li><li>No se incluyen deducciones autonómicas específicas (vivienda habitual, alquiler joven, donaciones, familia numerosa, etc.).</li><li>El régimen especial de Beckham y otras situaciones fiscales particulares <strong>no están modelados</strong>.</li><li>País Vasco y Navarra disponen de un sistema foral propio; los valores mostrados son aproximaciones.</li></ul><p>Para decisiones importantes, <strong>consulta siempre a un asesor fiscal homologado</strong>. El autor no se hace responsable de decisiones tomadas en base a esta calculadora.</p>',
+    disclaimer_legal: 'MIT License · © 2026 Konrad Cinkusz · Código abierto',
+    disclaimer_accept: 'Entendido — continuar'
   },
   pl: {
     _label: 'PL',
@@ -1171,7 +1285,12 @@ const I18N = {
     toast_imported: '✓ Zaimportowano',
     toast_import_error: 'Błąd importu',
     toast_reset: '✓ Zresetowano',
-    confirm_reset: 'Zresetować do wartości domyślnych? Obecna konfiguracja zostanie utracona.'
+    confirm_reset: 'Zresetować do wartości domyślnych? Obecna konfiguracja zostanie utracona.',
+    disclaimer_subtitle: 'Ważna informacja',
+    disclaimer_title: 'Kalkulator orientacyjny',
+    disclaimer_body: '<p>To narzędzie ma charakter <strong>wyłącznie orientacyjny</strong> i nie stanowi porady podatkowej, finansowej ani prawnej.</p><ul><li>Wyliczenia IRPF, składek ZUS i cuoty autónomos są <strong>przybliżeniami</strong> opartymi na przepisach 2026 i mogą różnić się od rzeczywistego rozliczenia.</li><li>Nie uwzględniono specyficznych ulg autonomicznych (mieszkanie własne, alquiler joven, darowizny, rodzina wielodzietna itd.).</li><li>Régimen Beckham i inne szczególne sytuacje podatkowe <strong>nie są modelowane</strong>.</li><li>Kraj Basków i Nawarra mają własny system foral; pokazane wartości są przybliżeniem.</li></ul><p>W ważnych sprawach <strong>zawsze konsultuj się z licencjonowanym doradcą podatkowym</strong>. Autor nie ponosi odpowiedzialności za decyzje podjęte na podstawie tego kalkulatora.</p>',
+    disclaimer_legal: 'MIT License · © 2026 Konrad Cinkusz · Open source',
+    disclaimer_accept: 'Rozumiem — kontynuuj'
   },
   en: {
     _label: 'EN',
@@ -1273,7 +1392,12 @@ const I18N = {
     toast_imported: '✓ Imported',
     toast_import_error: 'Import error',
     toast_reset: '✓ Reset',
-    confirm_reset: 'Reset to defaults? Your current setup will be lost.'
+    confirm_reset: 'Reset to defaults? Your current setup will be lost.',
+    disclaimer_subtitle: 'Important notice',
+    disclaimer_title: 'Indicative calculator',
+    disclaimer_body: '<p>This tool is <strong>strictly indicative</strong> and does not constitute tax, financial or legal advice of any kind.</p><ul><li>IRPF, Social Security and autónomos quota calculations are <strong>approximations</strong> based on 2026 regulations and may differ from your actual tax return.</li><li>Region-specific deductions are not included (primary residence, young-renter relief, donations, large families, etc.).</li><li>The Beckham special regime and other particular tax situations are <strong>not modelled</strong>.</li><li>Basque Country and Navarre have their own foral system; values shown are approximations.</li></ul><p>For important decisions, <strong>always consult a qualified tax advisor</strong>. The author accepts no liability for decisions made based on this calculator.</p>',
+    disclaimer_legal: 'MIT License · © 2026 Konrad Cinkusz · Open source',
+    disclaimer_accept: 'I understand — continue'
   }
 };
 
@@ -2223,6 +2347,45 @@ else {
 }
 applyLanguage();
 renderAll();
+
+/* ============================================================
+   DISCLAIMER — shown once per browser
+   ============================================================ */
+
+(function initDisclaimer() {
+  const DISCLAIMER_KEY = 'calc-familiar-disclaimer-v1';
+  const backdrop = document.getElementById('disclaimer-backdrop');
+  const acceptBtn = document.getElementById('btn-disclaimer-accept');
+
+  function showDisclaimer() {
+    backdrop.classList.remove('hidden');
+    acceptBtn.focus();
+  }
+
+  function acceptDisclaimer() {
+    try { localStorage.setItem(DISCLAIMER_KEY, '1'); } catch(e) {}
+    backdrop.classList.add('hidden');
+  }
+
+  acceptBtn.addEventListener('click', acceptDisclaimer);
+
+  // Close on backdrop click (outside modal)
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) acceptDisclaimer();
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !backdrop.classList.contains('hidden')) acceptDisclaimer();
+  });
+
+  // Show only if not previously accepted
+  try {
+    if (!localStorage.getItem(DISCLAIMER_KEY)) showDisclaimer();
+  } catch(e) {
+    showDisclaimer();
+  }
+})();
 </script>
 
 </body>

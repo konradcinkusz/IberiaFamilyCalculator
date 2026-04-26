@@ -1,10 +1,15 @@
 # Family Budget Calculator — Spain 2026
 
+[![GitHub Pages](https://img.shields.io/badge/Live%20demo-GitHub%20Pages-brightgreen?logo=github)](https://konradcinkusz.github.io/IberiaFamilyCalculator/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.txt)
+
 A configurable family budget calculator with real Spanish tax math (IRPF, autónomos, payroll). Built for families making big decisions — relocation, going freelance, switching companies, taking a sabbatical.
 
-**Three languages:** Spanish · Polish · English (switcher in the top-right corner).
+**🔗 Live demo:** [konradcinkusz.github.io/IberiaFamilyCalculator](https://konradcinkusz.github.io/IberiaFamilyCalculator/)
 
-**Live demo:** publish `index.html` to GitHub Pages and use it from any browser.
+**📦 Repository:** [github.com/konradcinkusz/IberiaFamilyCalculator](https://github.com/konradcinkusz/IberiaFamilyCalculator)
+
+**Three languages:** Spanish · Polish · English (switcher in the top-right corner).
 
 ## Features
 
@@ -22,10 +27,15 @@ A configurable family budget calculator with real Spanish tax math (IRPF, autón
 
 ## How to publish on GitHub Pages
 
-1. Create a new repository (e.g. `family-calculator`).
-2. Upload `index.html` to the root.
-3. In **Settings → Pages**, select branch `main`, folder `/ (root)`.
-4. Within seconds your calculator is live at `https://YOUR-USER.github.io/family-calculator/`.
+The app is already live at **[konradcinkusz.github.io/IberiaFamilyCalculator](https://konradcinkusz.github.io/IberiaFamilyCalculator/)**.
+
+To deploy your own fork:
+
+1. Fork or clone the repository.
+2. Go to **Settings → Pages**, select branch `main`, folder `/ (root)`.
+3. Within seconds your copy is live at `https://YOUR-USER.github.io/IberiaFamilyCalculator/`.
+
+> **Note:** `index.html` is fully self-contained. Fonts are self-hosted in `fonts/` — no external CDN requests.
 
 ## How to use
 
@@ -51,7 +61,30 @@ Fixed and variable monthly expenses. Each with a configurable slider.
 - Monthly balance
 - 1-year, 3-year and 5-year projection
 
-## Limitations
+## Privacy & cookies
+
+**No cookie banner is needed.** This app:
+
+| What | How | GDPR |
+|---|---|---|
+| User config | `localStorage` (functional) | ✅ No consent needed |
+| Shared scenarios | URL fragment (`#hash`) | ✅ Never sent to a server |
+| Analytics / tracking | None | ✅ N/A |
+| Fonts | Self-hosted in `fonts/` | ✅ No third-party requests |
+
+Fonts are **self-hosted** (not loaded from `fonts.googleapis.com`), which eliminates the Google Fonts GDPR concern raised in the [LG München I ruling (2022)](https://gdprhub.eu/index.php?title=LG_M%C3%BCnchen_I_-_3_O_17493/20) regarding IP address transfers to US servers without consent.
+
+The app has no backend, no tracking, and no cookies of any kind.
+
+## Disclaimer
+
+A first-visit disclaimer popup is built into the app. It appears once per browser (stored in `localStorage`) and covers:
+
+- The indicative, non-advisory nature of the calculations
+- Known limitations (no regional deductions, no Beckham regime, foral approximations)
+- A prompt to consult a qualified tax advisor for important decisions
+
+
 
 This calculator is **indicative**. It does not replace a tax advisor. Specifically:
 
@@ -65,4 +98,10 @@ For big decisions, validate the numbers with an advisor.
 
 ## License
 
-MIT — use, modify, share freely.
+The calculator code is **MIT** — see [`LICENSE.txt`](LICENSE.txt).
+
+The fonts in `fonts/` are licensed under the **SIL Open Font License 1.1** — see [`fonts/OFL-LICENSE.txt`](fonts/OFL-LICENSE.txt):
+- [Cormorant Garamond](https://github.com/CatharsisFonts/Cormorant) © 2015 The Cormorant Garamond Project Authors
+- [DM Sans](https://github.com/googlefonts/dm-fonts) © 2014–2022 The DM Sans Project Authors
+
+OFL permits free use, redistribution and self-hosting. The font files may not be sold standalone.
